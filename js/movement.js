@@ -63,6 +63,21 @@ export class Mover {
     this.dir = opposite(this.dir);
   }
 
+  // Forgiving turns: if the cat has only just passed the centre of a tile
+  // where the wanted turn is open, step back to that centre and turn there.
+  // Returns the distance given back (to be added to this frame's movement),
+  // or 0 if no turn was made.
+  tryLateTurn(want, canEnter, tolerance) {
+    if (isNone(this.dir) || isNone(want)) return 0;
+    if (want === this.dir || want === opposite(this.dir)) return 0;
+    if (this.p <= 0 || this.p > tolerance) return 0;
+    if (!canEnter(this.tx + want.x, this.ty + want.y)) return 0;
+    const back = this.p;
+    this.p = 0;
+    this.dir = want;
+    return back;
+  }
+
   // Move `dist` tiles. At every tile centre, `choose(mover)` returns the
   // direction it would like to go; `canEnter(x, y)` says if a tile is open.
   advance(dist, canEnter, choose) {
