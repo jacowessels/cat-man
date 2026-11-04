@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <title>Cat-Man</title>
+  <meta name="description" content="Help the cat catch all the mice in the back yard, and watch out for the dogs!">
+  <meta name="theme-color" content="#0b1020">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Cat-Man">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icons/icon-180.png">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div id="app">
+    <header id="hud" hidden>
+      <div class="hud-item"><span class="hud-label">Player</span><span id="hud-name">-</span></div>
+      <div class="hud-item"><span class="hud-label">Score</span><span id="hud-score">0</span></div>
+      <div class="hud-item"><span class="hud-label">Level</span><span id="hud-level">1</span></div>
+      <div class="hud-item"><span class="hud-label">Lives</span><span id="hud-lives" aria-label="lives"></span></div>
+      <div class="hud-buttons">
+        <button id="btn-mute" class="icon-btn" aria-label="Sound on or off">🔊</button>
+        <button id="btn-pause" class="icon-btn" aria-label="Pause">⏸</button>
+      </div>
+    </header>
+
+    <main id="stage">
+      <canvas id="game" aria-label="Game board"></canvas>
+    </main>
+
+    <div id="dpad" class="dpad" hidden>
+      <button data-dir="up" class="dpad-up" aria-label="Up">▲</button>
+      <button data-dir="left" class="dpad-left" aria-label="Left">◀</button>
+      <button data-dir="right" class="dpad-right" aria-label="Right">▶</button>
+      <button data-dir="down" class="dpad-down" aria-label="Down">▼</button>
+    </div>
+  </div>
+
+  <!-- Start screen -->
+  <section id="screen-start" class="screen">
+    <div class="panel">
+      <h1 class="title"><span class="title-cat">CAT</span>-<span class="title-man">MAN</span></h1>
+      <p class="tagline">Catch every mouse in the yard. Don't let the dogs catch you!</p>
+      <form id="name-form" autocomplete="off">
+        <label for="player-name">Your name</label>
+        <input id="player-name" name="player" maxlength="12" placeholder="Type your name" required enterkeyhint="go">
+        <p id="name-error" class="error" hidden>Please type a name to play.</p>
+        <button type="submit" class="big-btn">Play</button>
+      </form>
+      <label class="toggle"><input type="checkbox" id="opt-dpad"> Show arrow buttons</label>
+      <details class="howto">
+        <summary>How to play</summary>
+        <ul>
+          <li><b>Swipe</b> up, down, left or right to steer the cat. On a computer, use the <b>arrow keys</b> or <b>WASD</b>.</li>
+          <li>Eat all the <b>mice</b> to finish the level. Each mouse is 10 points.</li>
+          <li>Eat <b>catnip</b> 🌿 and the dogs get scared. Catch them for 200, 400, 800 and 1600 points!</li>
+          <li>Grab the <b>fish</b> when it appears for bonus points.</li>
+          <li>You have <b>3 lives</b> on every level. Each level the dogs get faster and smarter.</li>
+          <li>Press <b>P</b> or the pause button to take a break.</li>
+        </ul>
+      </details>
+      <h2>High scores</h2>
+      <ol id="scores-start" class="scores"></ol>
+    </div>
+  </section>
+
+  <!-- Pause screen -->
+  <section id="screen-pause" class="screen" hidden>
+    <div class="panel">
+      <h2>Paused</h2>
+      <button id="btn-resume" class="big-btn">Resume</button>
+      <button id="btn-quit" class="link-btn">Quit to start</button>
+    </div>
+  </section>
+
+  <!-- Game over screen -->
+  <section id="screen-over" class="screen" hidden>
+    <div class="panel">
+      <h2>Game over</h2>
+      <p id="over-summary" class="summary"></p>
+      <p id="over-rank" class="rank"></p>
+      <ol id="scores-over" class="scores"></ol>
+      <button id="btn-again" class="big-btn">Play again</button>
+      <button id="btn-change" class="link-btn">Change player</button>
+    </div>
+  </section>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
