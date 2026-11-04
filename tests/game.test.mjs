@@ -22,6 +22,61 @@ test('swipe direction from finger movement', () => {
   assert.equal(directionFromDelta(4, -40), 'up');
   assert.equal(directionFromDelta(0, 40), 'down');
   assert.equal(directionFromDelta(5, 5), null);
+  assert.equal(directionFromDelta(13, 0), 'right', '12 px is enough');
+  assert.equal(directionFromDelta(0, -11), null, 'under 12 px is not');
+  assert.equal(directionFromDelta(13, 12), null, 'a near-diagonal is ignored');
+  assert.equal(directionFromDelta(7, 1, 6), 'right', 'a short flick counts on release');
+});
+
+test('a turn asked for just after a junction is still taken there', () => {
+  const m = new Maze();
+  const can = (x, y) => m.catCanEnter(x, y);
+  // Row 1, moving right, 0.2 past the centre of x=4 where down is open.
+  const cat = new Mover(4, 1, (x) => m.wrapX(x));
+  cat.dir = DIRS.right;
+  cat.p = 0.2;
+  const back = cat.tryLateTurn(DIRS.down, can, 0.4);
+  assert.ok(Math.abs(back - 0.2) < 1e-9);
+  assert.equal(cat.dir, DIRS.down);
+  assert.equal(cat.tx, 4);
+  assert.equal(cat.p, 0);
+});
+
+test('late turns are refused when too late, blocked or a reverse', () => {
+  const m = new Maze();
+  const can = (x, y) => m.catCanEnter(x, y);
+  const make = (x, p) => {
+    const c = new Mover(x, 1, (v) => m.wrapX(v));
+    c.dir = DIRS.right;
+    c.p = p;
+    return c;
+  };
+  const tooLate = make(4, 0.6);
+  assert.equal(tooLate.tryLateTurn(DIRS.down, can, 0.4), 0);
+  assert.equal(tooLate.dir, DIRS.right);
+  const blocked = make(2, 0.2); // (2,2) is a hedge
+  assert.equal(blocked.tryLateTurn(DIRS.down, can, 0.4), 0);
+  assert.equal(blocked.dir, DIRS.right);
+  const reverse = make(4, 0.2);
+  assert.equal(reverse.tryLateTurn(DIRS.left, can, 0.4), 0);
+  assert.equal(reverse.dir, DIRS.right);
+});
+
+test('in a game, a late swipe turns at the junction without losing ground', () => {
+  const g = new Game({ rng: seeded() });
+  g.start('Tom');
+  run(g, 2.5);
+  g.dogs.forEach((d) => d.mover.place(1, 19)); // keep the dogs away
+  g.cfg.dogSpeed = 0;
+  g.cat.place(4, 1, DIRS.right);
+  g.cat.p = 0.3;
+  g.wanted = DIRS.right;
+  g.setDirection('down');
+  assert.equal(g.cat.dir, DIRS.down);
+  assert.equal(g.cat.tx, 4);
+  g.update(1 / 120);
+  const step = g.cfg.catSpeed / 120;
+  assert.ok(Math.abs(g.cat.y - (1 + 0.3 + step)) < 1e-6, `cat y ${g.cat.y}`);
 });
 
 test('a turn asked for early is taken at the next opening', () => {

@@ -7,6 +7,8 @@ export const POINTS = { mouse: 10, catnip: 50, dogBase: 200 };
 const FISH_AT_MICE = [60, 130]; // a fish appears after this many mice are eaten
 const FISH_SECONDS = 9;
 const CATCH_DISTANCE = 0.6;
+// How far past a junction (in tiles) a turn can still be taken there.
+export const LATE_TURN_TILES = 0.4;
 
 // All the game rules. No drawing or sound here: the game reports what
 // happened through `onEvent(name, data)` so the page can react.
@@ -54,6 +56,8 @@ export class Game {
     const m = this.maze;
     this.cat = new Mover(m.catStart.x, m.catStart.y, (x) => m.wrapX(x));
     this.cat.dir = NONE;
+    this.catCanEnter = (x, y) => m.catCanEnter(x, y);
+    this.lateTurnCredit = 0;
     this.wanted = DIRS.left;
     this.mouthTime = 0;
     this.levelTime = 0;
@@ -81,6 +85,7 @@ export class Game {
     this.wanted = d;
     if (this.state === 'playing' || this.state === 'ready') {
       if (!isNone(this.cat.dir) && d === opposite(this.cat.dir)) this.cat.reverse();
+      else this.lateTurnCredit += this.cat.tryLateTurn(d, this.catCanEnter, LATE_TURN_TILES);
     }
   }
 
@@ -164,10 +169,14 @@ export class Game {
       }
     }
 
-    // Cat
-    const canEnter = (x, y) => this.maze.catCanEnter(x, y);
+    // Cat (any distance given back by a late turn is added on, so turning
+    // never costs the cat ground)
+    const canEnter = this.catCanEnter;
     const before = this.cat.x + this.cat.y;
-    this.cat.advance(this.cfg.catSpeed * dt, canEnter, catChooser(() => this.wanted, canEnter));
+    let dist = this.cfg.catSpeed * dt + this.lateTurnCredit;
+    this.lateTurnCredit = 0;
+    dist += this.cat.tryLateTurn(this.wanted, canEnter, LATE_TURN_TILES);
+    this.cat.advance(dist, canEnter, catChooser(() => this.wanted, canEnter));
     if (this.cat.x + this.cat.y !== before) this.mouthTime += dt;
     this.eatAtCat();
     if (this.state !== 'playing') return;
