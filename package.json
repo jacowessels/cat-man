@@ -1,0 +1,11 @@
+{
+  "name": "cat-man",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "A cat-and-mouse maze chase game for the browser.",
+  "scripts": {
+    "test": "node --test",
+    "start": "python3 -m http.server 8000"
+  }
+}
